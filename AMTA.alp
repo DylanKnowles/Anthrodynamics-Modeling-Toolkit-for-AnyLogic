@@ -4,7 +4,7 @@
 	         AnyLogic Project File 
 *************************************************	         
 -->
-<AnyLogicWorkspace WorkspaceVersion="1.9" AnyLogicVersion="8.2.3.201712291251" AlpVersion="8.0.4">
+<AnyLogicWorkspace WorkspaceVersion="1.9" AnyLogicVersion="8.3.2.201807061735" AlpVersion="8.3.1">
 <Model>
 	<Id>1520815173520</Id>
 	<Name><![CDATA[AMTA]]></Name>
@@ -83,15 +83,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import static ca.loif.niceassert.NiceAssert.*;
 import java.util.function.DoubleSupplier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.Queue;
-import java.util.concurrent.Future;]]></Import>
+import java.util.concurrent.Future;
+import static ca.anthrodynamics.toolkit.anylogic.Exoskeleton.*;]]></Import>
 			<Generic>true</Generic>
 			<GenericParameter>
 				<Id>1520815340157</Id>
@@ -118,6 +117,18 @@ import java.util.concurrent.Future;]]></Import>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -237,7 +248,7 @@ import java.util.concurrent.Future;]]></Import>
 					<Id>1520815340202</Id>
 					<Name><![CDATA[jobs]]></Name>
 					<ExcludeFromBuild>true</ExcludeFromBuild>
-					<X>110</X><Y>-10</Y>
+					<X>-40</X><Y>-80</Y>
 					<Label><X>10</X><Y>0</Y></Label>
 					<PublicFlag>false</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
@@ -446,8 +457,10 @@ if (isTracking(key))
 	addOngoingContributionToAccumulatedValue(key);
 
 // Record
+tryAddLabel(key);
 accumulatedValue += contribution;
-contributionsToDate.put(key, contribution + contributionsToDate.getOrDefault(key, 0d));]]></Body>
+contributionsToDate.put(key, contribution + contributionsToDate.getOrDefault(key, 0d));
+]]></Body>
 				</Function>
 				<Function AccessType="public" StaticFunction="false">
 					<ReturnModificator>VOID</ReturnModificator>
@@ -484,6 +497,7 @@ assertNotNull("Contribution not provided.", contribution);
 //updateAccumulatedValue();
 
 // Record
+tryAddLabel(key);
 ongoingContributions.put(key, contribution);
 timeOfLastContribution.put(key, time());]]></Body>
 				</Function>
@@ -665,7 +679,9 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>true</ShowLabel>
 					<Body><![CDATA[for (Key key : ongoingContributions.keySet())
-	addOngoingContributionToAccumulatedValue(key);]]></Body>
+	addOngoingContributionToAccumulatedValue(key);
+	
+costChart.updateData();]]></Body>
 				</Function>
 				<Function AccessType="public" StaticFunction="false">
 					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
@@ -685,13 +701,36 @@ contributionsToDate.remove(key);]]></Body>
 	.sum()
 ;]]></Body>
 				</Function>
+				<Function AccessType="default" StaticFunction="false">
+					<ReturnModificator>VOID</ReturnModificator>
+					<ReturnType><![CDATA[double]]></ReturnType>
+					<Id>1537504631835</Id>
+					<Name><![CDATA[tryAddLabel]]></Name>
+					<X>190</X><Y>110</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[key]]></Name>
+						<Type><![CDATA[Key]]></Type>
+					</Parameter>
+					<Body><![CDATA[if (!contributionsToDate.containsKey(key)) {
+	$(costChart).add(
+		key.toString(), 
+		spectrumColor(key.hashCode(), 37), 
+		() -> getContributionsToDate(key), 
+		this
+	);
+}]]></Body>
+				</Function>
 			</Functions>
 			<AgentLinks>
 				<AgentLink>
 					<Id>1520815340234</Id>
 					<Name><![CDATA[connections]]></Name>
 					<ExcludeFromBuild>true</ExcludeFromBuild>
-					<X>50</X><Y>-50</Y>
+					<X>-100</X><Y>-120</Y>
 					<Label><X>15</X><Y>0</Y></Label>
 					<PublicFlag>false</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
@@ -720,7 +759,7 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
+					<OnClickCode><![CDATA[viewArea.navigateTo();]]></OnClickCode>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -735,7 +774,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -768,7 +806,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -799,7 +836,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -830,7 +866,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -863,7 +898,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -888,7 +922,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -916,7 +949,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -939,7 +971,6 @@ contributionsToDate.remove(key);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -954,91 +985,18 @@ contributionsToDate.remove(key);]]></Body>
 					<Alignment>LEFT</Alignment>
 				</Text>
 			</Shapes>
-
-		</ActiveObjectClass>
-		<!--   =========   Active Object Class   ========  -->
-		<ActiveObjectClass>
-			<Id>1520815340241</Id>
-			<Name><![CDATA[CitationTracker]]></Name>
-			<Description><![CDATA[Used to track citations across a model.
-
-NOTICE
-Copyright 2018 Dylan Knowles and worldwide Anthrodynamics Simulation branches (As of 2018, Canada: Anthrodynamics Simulation Services Ltd.; Australia: Anthrodynamics Simulation Services Australia PTY Ltd.)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.]]></Description>
-			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
-			<Import><![CDATA[import de.undercouch.citeproc.csl.*;
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
-import de.undercouch.citeproc.CSL;
-import de.undercouch.citeproc.output.Bibliography;
-import de.undercouch.citeproc.helper.json.StringJsonBuilder;
-import static ca.anthrodynamics.toolkit.anylogic.CollectionUtilities.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;]]></Import>
-			<Generic>false</Generic>
-			<GenericParameter>
-				<Id>1520815340236</Id>
-				<Name><![CDATA[1520815340236]]></Name>
-				<GenericParameterValue Class="CodeValue">
-					<Code><![CDATA[T extends Agent]]></Code>
-				</GenericParameterValue>
-				<GenericParameterLabel><![CDATA[Generic parameter:]]></GenericParameterLabel>
-			</GenericParameter>
-			<FlowChartsUsage>ENTITY</FlowChartsUsage>
-			<SamplesToKeep>100</SamplesToKeep>
-			<LimitNumberOfArrayElements>false</LimitNumberOfArrayElements>
-			<ElementsLimitValue>100</ElementsLimitValue>
-			<MakeDefaultViewArea>true</MakeDefaultViewArea>
-			<SceneGridColor/>
-			<SceneBackgroundColor/>
-			<AgentProperties>
-	 			<SpaceType>CONTINUOUS</SpaceType>			
-				<EnvironmentDefinesInitialLocation>true</EnvironmentDefinesInitialLocation>
-				<RotateAnimationTowardsMovement>true</RotateAnimationTowardsMovement>
-				<RotateAnimationVertically>false</RotateAnimationVertically>
-				<VelocityCode Class="CodeUnitValue">
-					<Code><![CDATA[10]]></Code>
-					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
-				</VelocityCode>
-			</AgentProperties>
-			<EnvironmentProperties>
-					<EnableSteps>false</EnableSteps>
-					<StepDurationCode Class="CodeUnitValue">
-						<Code><![CDATA[1.0]]></Code>
-						<Unit Class="TimeUnits"><![CDATA[SECOND]]></Unit>
-					</StepDurationCode>
-					<SpaceType>CONTINUOUS</SpaceType>
-					<WidthCode><![CDATA[500]]></WidthCode>
-					<HeightCode><![CDATA[500]]></HeightCode>
-					<ZHeightCode><![CDATA[0]]></ZHeightCode>
-					<ColumnsCountCode><![CDATA[100]]></ColumnsCountCode>
-					<RowsCountCode><![CDATA[100]]></RowsCountCode>
-					<NeigborhoodType>MOORE</NeigborhoodType>
-					<LayoutType>USER_DEF</LayoutType>
-					<LayoutTypeApplyOnStartup>true</LayoutTypeApplyOnStartup>
-					<NetworkType>USER_DEF</NetworkType>
-					<NetworkTypeApplyOnStartup>true</NetworkTypeApplyOnStartup>
-					<ConnectionsPerAgentCode><![CDATA[2]]></ConnectionsPerAgentCode>
-					<ConnectionsRangeCode><![CDATA[50]]></ConnectionsRangeCode>
-					<NeighborLinkFractionCode><![CDATA[0.95]]></NeighborLinkFractionCode>
-					<MCode><![CDATA[10]]></MCode>
-			</EnvironmentProperties>
-			<DatasetsCreationProperties>
-				<AutoCreate>true</AutoCreate>
+			<Charts>
+    			<TimeStackChart>
+					<Id>1537503929659</Id>
+					<Name><![CDATA[costChart]]></Name>
+					<X>0</X><Y>-210</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>false</ShowLabel>
+					<AutoUpdate>false</AutoUpdate>
 					<OccurrenceAtTime>true</OccurrenceAtTime>
-					<OccurrenceDate>1489996800000</OccurrenceDate>
+					<OccurrenceDate>1537516800000</OccurrenceDate>
 					<OccurrenceTime Class="CodeUnitValue">
 						<Code><![CDATA[0]]></Code>
 						<Unit Class="TimeUnits"><![CDATA[YEAR]]></Unit>
@@ -1047,345 +1005,54 @@ import java.util.stream.Collectors;]]></Import>
 						<Code><![CDATA[1]]></Code>
 						<Unit Class="TimeUnits"><![CDATA[YEAR]]></Unit>
 					</RecurrenceCode>
-			</DatasetsCreationProperties>
-			<ScaleRuler>
-				<Id>1520815340237</Id>
-				<Name><![CDATA[scale]]></Name>
-				<X>0</X><Y>-150</Y>
-				<PublicFlag>false</PublicFlag>
-				<PresentationFlag>false</PresentationFlag>
-				<ShowLabel>false</ShowLabel>
-				<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-				<Length>100</Length>
-				<Rotation>0</Rotation>
-				<ScaleType>BASED_ON_LENGTH</ScaleType>
-				<ModelLength>10</ModelLength>
-				<LengthUnits>METER</LengthUnits>
-				<Scale>10</Scale>
-				<InheritedFromParentAgentType>true</InheritedFromParentAgentType>
-			</ScaleRuler>
-			<ConnectionsId>1520815340261</ConnectionsId>
-			<Variables>
-				<Variable Class="CollectionVariable">
-					<Id>1520815340243</Id>
-					<Name><![CDATA[citedValues]]></Name>
-					<Description><![CDATA[Values cited in the model.]]></Description>
-					<X>20</X><Y>20</Y>
-					<Label><X>10</X><Y>0</Y></Label>
+					<EmbeddedIcon>false</EmbeddedIcon>
+					<Width>260</Width>
+					<Height>210</Height>
+					<BackgroundColor/>
+					<BorderColor/>
+					<ChartArea>
+						<XOffset>50</XOffset>
+						<YOffset>30</YOffset>
+						<Width>180</Width>
+						<Height>100</Height>
+						<BackgroundColor>-1</BackgroundColor>
+						<BorderColor>-16777216</BorderColor>
+						<GridColor>-12566464</GridColor>
+					</ChartArea>
+					<Legend>
+						<Place>SOUTH</Place>
+						<TextColor>-16777216</TextColor>
+						<Size>50</Size>
+					</Legend>
+					<Labels>
+						<HorLabelsPosition>DEFAULT</HorLabelsPosition>
+						<VerLabelsPosition>DEFAULT</VerLabelsPosition>
+						<TextColor>-12566464</TextColor>
+					</Labels>
+					<ShowLegend>true</ShowLegend>
+					<TimeWindowsMovementType>MOVEMENT_WITH_TIME</TimeWindowsMovementType>		
+					<TimeWindowUnits>MODEL_TIME_UNIT</TimeWindowUnits>
+					<TimeWindowExpression><![CDATA[100]]></TimeWindowExpression>
+					<SamplesToKeep>1000</SamplesToKeep>
+					<VerScaleToExpression><![CDATA[1]]></VerScaleToExpression>
+					<VerScaleType>HUNDRED_PERCENTS</VerScaleType>
+					<LabelFormat>MODEL_TIME_UNITS</LabelFormat>
+    			</TimeStackChart>
+			</Charts>
+			<Areas>
+				<Area>
+					<Id>1537504451587</Id>
+					<Name><![CDATA[viewArea]]></Name>
+					<X>-40</X><Y>-210</Y>
+					<Label><X>0</X><Y>-10</Y></Label>
 					<PublicFlag>false</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Properties SaveInSnapshot="true" AccessType="private" StaticVariable="true">
-						<CollectionClass><![CDATA[LinkedHashMap]]></CollectionClass>
-						<ElementClass><![CDATA[LinkedHashSet<CSLItemDataBuilder>]]></ElementClass>
-						<ValueElementClass><![CDATA[Object]]></ValueElementClass>
-					</Properties>
-
-				</Variable>
-			</Variables>
-			<Functions>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
-					<ReturnType><![CDATA[<T> T]]></ReturnType>
-					<Id>1520815340245</Id>
-					<Name><![CDATA[use]]></Name>
-					<Description><![CDATA[Registers the citation and logs the value.]]></Description>
-					<X>20</X><Y>50</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Parameter>
-						<Name><![CDATA[value]]></Name>
-						<Type><![CDATA[T]]></Type>
-					</Parameter>
-					<Parameter>
-						<Name><![CDATA[primaryCitation]]></Name>
-						<Type><![CDATA[CSLItemDataBuilder]]></Type>
-					</Parameter>
-					<Parameter>
-						<Name><![CDATA[citations]]></Name>
-						<Type><![CDATA[CSLItemDataBuilder...]]></Type>
-					</Parameter>
-					<Body><![CDATA[LinkedHashSet<CSLItemDataBuilder> sources = new LinkedHashSet<>();
-sources.add(primaryCitation);//.build());
-for (int i = 0; i < citations.length; i += 1)
-	sources.add(citations[i]);//.build());
-
-citedValues.put(sources, value);
-
-return value;]]></Body>
-				</Function>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
-					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
-					<Id>1520815340247</Id>
-					<Name><![CDATA[citation]]></Name>
-					<Description><![CDATA[Convenience method to get a citation builder more quickly.]]></Description>
-					<X>20</X><Y>80</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Parameter>
-						<Name><![CDATA[label]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Body><![CDATA[ModelCitation citation = new ModelCitation(
-	label,
-	Thread.currentThread().getStackTrace()[2].getClassName()
-);
-return citation;]]></Body>
-				</Function>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>VOID</ReturnModificator>
-					<ReturnType><![CDATA[double]]></ReturnType>
-					<Id>1520815340249</Id>
-					<Name><![CDATA[dumpBibliography]]></Name>
-					<X>20</X><Y>140</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Parameter>
-						<Name><![CDATA[format]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Body><![CDATA[CSLItemData[] data = new CSLItemData[citedValues.size()];
-int i = 0;
-for (CSLItemData next : citedValues.keySet().stream().flatMap(c -> c.stream()).map(raw -> raw.build()).collect(Collectors.toList())) {
-	data[i] = next;
-	i += 1;
-}
-try {
-	traceln(CSL.makeAdhocBibliography(format, data).makeString());
-}
-catch (Throwable t) {
-	throw new RuntimeException(t);
-}]]></Body>
-				</Function>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>VOID</ReturnModificator>
-					<ReturnType><![CDATA[double]]></ReturnType>
-					<Id>1520815340251</Id>
-					<Name><![CDATA[dumpSimpleBibliography]]></Name>
-					<Description><![CDATA[Dumps a simple bibliography to the console.]]></Description>
-					<X>20</X><Y>170</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Body><![CDATA[// Build the header
-final String Sep = "\t";
-StringBuilder header = new StringBuilder();
-list(
-	"Label",
-	"Value",
-	"Notes",
-	"Authority",
-	"Primary Document",
-	"Authors",
-	"Date",
-	"DOI",
-	"URL",
-	"Accessed",
-	"Class in Model Setting this Field"
-).forEach(
-	item -> header.append(item).append(Sep)
-);
-traceln(header.toString());
-
-// Dump the values.
-citedValues
-	.entrySet()
-	.stream()
-	.sorted((A,B) -> A.getKey().iterator().next().build().getCitationLabel().compareTo(B.getKey().iterator().next().build().getCitationLabel()))
-	.forEach(kvp -> {
-		int subCitationNumber = 1;
-		for (CSLItemDataBuilder rawCitation : kvp.getKey()) {
-			CSLItemData citation = rawCitation.build();
-			Object value = kvp.getValue();
-			
-			String authorString = "";
-			if (citation.getAuthor() != null) {
-				for (CSLName name : Arrays.asList(citation.getAuthor())) { 
-					authorString += name.getFamily() + ", " + name.getGiven() + "; ";
-				}
-			}
-			else {
-				authorString = null;
-			}
-			
-			// Special data type strings that frequently appear.
-			String valueString = value.toString();
-			if (value instanceof TableFunction) {
-				TableFunction tf = (TableFunction)value;
-				Map<Double, Double> table = new TreeMap<>();
-				for (int i = 0; i < tf.getValues().length; i += 1) {
-					table.put(tf.getArguments()[i], tf.getValues()[i]);
-				}
-				valueString = "Table Function [" + table + ", " + tf.getInterpolationType() + ", " + tf.getOutOfRangeAction()+"]";	
-			}
-			else if (value instanceof CustomDistribution || value instanceof CustomDistributionOfOptions) {
-				
-				// TODO: VERY crude. Close enough for now. Isn't behaving, have other things to do today.
-				String rawString = value.toString();
-				String truncatedString = rawString
-					.replaceAll("[\\n\\r]+", ",")
-					.replaceAll("\t","=")
-					.replace(".*rows?,(.*)", "\1")
-				;
-				
-				valueString = "Distribution [" + truncatedString + "]";	
-			}
-			else if (value.getClass().isArray()) {
-				valueString = CollectionUtilities.deepToString(value);
-			}
-			
-			StringBuilder sb = new StringBuilder();
-			list(
-				citation.getCitationLabel(),
-				valueString,
-				citation.getNote(),
-				//subCitationNumber,
-				citation.getAuthority(),
-				citation.getTitle(),
-				authorString,
-				ifNotNull(citation.getOriginalDate(), c -> Arrays.deepToString(c.getDateParts())),
-				citation.getDOI(),
-				citation.getURL(),
-				ifNotNull(citation.getAccessed(), c -> Arrays.deepToString(c.getDateParts()))
-			).forEach(
-				item -> sb.append(item).append(Sep)
-			);
-			
-			if (rawCitation instanceof ModelCitation)
-				sb.append(((ModelCitation)rawCitation).creatingClazz).append(Sep);
-			else
-				sb.append("null").append(Sep);
-			
-			traceln(sb.toString());
-			
-			subCitationNumber += 1;
-		}
-	})
-;
-]]></Body>
-				</Function>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>VOID</ReturnModificator>
-					<ReturnType><![CDATA[double]]></ReturnType>
-					<Id>1520815340253</Id>
-					<Name><![CDATA[clear]]></Name>
-					<Description><![CDATA[Clears all citations.]]></Description>
-					<X>20</X><Y>200</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Body><![CDATA[citedValues.clear();]]></Body>
-				</Function>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
-					<ReturnType><![CDATA[CSLName]]></ReturnType>
-					<Id>1520815340255</Id>
-					<Name><![CDATA[name]]></Name>
-					<Description><![CDATA[Convenience method for producing a CSL name.]]></Description>
-					<X>20</X><Y>230</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Parameter>
-						<Name><![CDATA[family]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Parameter>
-						<Name><![CDATA[given]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Body><![CDATA[return new CSLName(
-               family, //String family,
-               given, //String given,
-               null,  //String droppingParticle,
-               null,  //String nonDroppingParticle,
-               null,  //String suffix,
-               false, //Boolean commaPrefix,
-               false, //Boolean commaSuffix,
-               false, //Boolean staticOrdering,
-               false, //Boolean staticParticles,
-               null,  //String literal,
-               false, //Boolean parseNames,
-               false  //Boolean isInstitution
-);]]></Body>
-				</Function>
-				<Function AccessType="public" StaticFunction="true">
-					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
-					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
-					<Id>1520815340257</Id>
-					<Name><![CDATA[placeholder]]></Name>
-					<Description><![CDATA[Convenience method to get a citation builder more quickly.]]></Description>
-					<X>40</X><Y>120</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Parameter>
-						<Name><![CDATA[label]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Body><![CDATA[// Need to log class name here, otherwise this method will show up as the calling class which isn't what we want.
-return (ModelCitation)(citation("Placeholder: " + label, Thread.currentThread().getStackTrace()[2].getClassName())).authority("Modeler");]]></Body>
-				</Function>
-				<Function AccessType="private" StaticFunction="true">
-					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
-					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
-					<Id>1520815340259</Id>
-					<Name><![CDATA[citation]]></Name>
-					<Description><![CDATA[Convenience method to get a citation builder more quickly.]]></Description>
-					<X>40</X><Y>100</Y>
-					<Label><X>10</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<Parameter>
-						<Name><![CDATA[label]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Parameter>
-						<Name><![CDATA[className]]></Name>
-						<Type><![CDATA[String]]></Type>
-					</Parameter>
-					<Body><![CDATA[ModelCitation citation = new ModelCitation(
-	label,
-	className
-);
-return citation;]]></Body>
-				</Function>
-			</Functions>
-			<AgentLinks>
-				<AgentLink>
-					<Id>1520815340261</Id>
-					<Name><![CDATA[connections]]></Name>
-					<X>50</X><Y>-50</Y>
-					<Label><X>15</X><Y>0</Y></Label>
-					<PublicFlag>false</PublicFlag>
-					<PresentationFlag>true</PresentationFlag>
-					<ShowLabel>true</ShowLabel>
-					<HandleReceiveInConnections>false</HandleReceiveInConnections>
-					<AgentLinkType>COLLECTION_OF_LINKS</AgentLinkType>
-					<AgentLinkBidirectional>true</AgentLinkBidirectional>
-					<MessageType><![CDATA[Object]]></MessageType>
-					<LineStyle>SOLID</LineStyle>
-					<LineWidth>1</LineWidth>
-					<LineColor>-16777216</LineColor>
-					<LineZOrder>UNDER_AGENTS</LineZOrder>
-					<LineArrow>NONE</LineArrow>
-					<LineArrowPosition>END</LineArrowPosition>
-				</AgentLink>
-			</AgentLinks>
-
-
+					<ShowLabel>false</ShowLabel>
+					<Title><![CDATA[]]></Title>
+					<Width>1000</Width>
+					<Height>600</Height>
+				</Area>
+			</Areas>
 
 		</ActiveObjectClass>
 		<!--   =========   Active Object Class   ========  -->
@@ -1409,8 +1076,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import org.apache.sanselan.color.ColorConversions;
 import org.apache.sanselan.color.ColorCIELab;
 import org.apache.sanselan.color.ColorXYZ;
@@ -1446,6 +1111,18 @@ import static ca.loif.niceassert.NiceAssert.*;]]></Import>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -2409,8 +2086,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import org.apache.sanselan.color.ColorConversions;
 import org.apache.sanselan.color.ColorCIELab;
 import org.apache.sanselan.color.ColorXYZ;
@@ -2444,6 +2119,18 @@ import com.anylogic.libraries.processmodeling.Service;]]></Import>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -3230,8 +2917,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import java.util.function.*;]]></Import>
 			<Generic>true</Generic>
 			<GenericParameter>
@@ -3258,6 +2943,18 @@ limitations under the License.]]></Description>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -3569,7 +3266,6 @@ limitations under the License.]]></Description>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
 					<OnClickCode><![CDATA[onClick.accept(linkedObject);
 timeOfLastClick = time();]]></OnClickCode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -3584,7 +3280,6 @@ timeOfLastClick = time();]]></OnClickCode>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -3610,7 +3305,6 @@ timeOfLastClick = time();]]></OnClickCode>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -3654,8 +3348,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import java.lang.Runnable;
 import static ca.loif.niceassert.NiceAssert.*;
 import java.util.function.*;
@@ -3686,6 +3378,18 @@ import java.util.stream.StreamSupport;]]></Import>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -4049,8 +3753,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Generic>false</Generic>
 			<GenericParameter>
 				<Id>1520815340490</Id>
@@ -4076,6 +3778,18 @@ limitations under the License.]]></Description>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -4251,7 +3965,6 @@ oval3.setFillColor(paleTurquoise);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4274,7 +3987,6 @@ oval3.setFillColor(paleTurquoise);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4297,7 +4009,6 @@ oval3.setFillColor(paleTurquoise);]]></Body>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4346,8 +4057,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import ca.anthrodynamics.toolkit.anylogic.TestSuite.CanScheduleCommands;
 import java.util.function.Consumer;
 import static ca.loif.niceassert.NiceAssert.*;
@@ -4379,6 +4088,18 @@ import static ca.anthrodynamics.toolkit.anylogic.CollectionUtilities.*;]]></Impo
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -4612,7 +4333,6 @@ return getDownstreamActions((InterventionActionNode)actionsPort.getFlatLinks().g
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4635,7 +4355,6 @@ return getDownstreamActions((InterventionActionNode)actionsPort.getFlatLinks().g
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4658,7 +4377,6 @@ return getDownstreamActions((InterventionActionNode)actionsPort.getFlatLinks().g
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4681,7 +4399,6 @@ return getDownstreamActions((InterventionActionNode)actionsPort.getFlatLinks().g
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4704,7 +4421,6 @@ return getDownstreamActions((InterventionActionNode)actionsPort.getFlatLinks().g
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -4734,7 +4450,6 @@ return getDownstreamActions((InterventionActionNode)actionsPort.getFlatLinks().g
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -4772,8 +4487,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import ca.anthrodynamics.toolkit.anylogic.TestSuite.CanScheduleCommands;
 import java.util.function.Consumer;
 import static ca.loif.niceassert.NiceAssert.*;
@@ -4805,6 +4518,18 @@ import static ca.anthrodynamics.toolkit.anylogic.CollectionUtilities.*;]]></Impo
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -5101,7 +4826,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -5116,7 +4840,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -5139,7 +4862,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -5162,7 +4884,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -5205,7 +4926,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -5248,7 +4968,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -5283,7 +5002,6 @@ return getDownstreamActionTimes((InterventionAtNode)moments.getFlatLinks().get(0
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>true</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -5335,8 +5053,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import static ca.loif.niceassert.NiceAssert.*;
 import java.util.function.*;
 import java.util.stream.*;]]></Import>
@@ -5365,6 +5081,18 @@ import java.util.stream.*;]]></Import>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -6051,8 +5779,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import java.util.function.Supplier;
 import java.util.function.Function;
 import ca.loif.niceassert.NiceAssert;]]></Import>
@@ -6084,6 +5810,18 @@ if (startWithValuesShown)
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -6781,7 +6519,6 @@ NiceAssert.assertFalse(
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -6804,7 +6541,6 @@ NiceAssert.assertFalse(
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -6826,7 +6562,6 @@ NiceAssert.assertFalse(
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>0.0</Rotation>
@@ -6848,7 +6583,6 @@ NiceAssert.assertFalse(
 					<PresentationFlag>false</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<ZHeight>10</ZHeight>
@@ -6871,7 +6605,6 @@ NiceAssert.assertFalse(
 					<PresentationFlag>false</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
 					<DrawMode>SHAPE_DRAW_2D</DrawMode>
-					<AsObject>true</AsObject>
 					<EmbeddedIcon>false</EmbeddedIcon>
 					<Z>0</Z>
 					<Rotation>315.0</Rotation>
@@ -6895,10 +6628,8 @@ NiceAssert.assertFalse(
 					<PublicFlag>true</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
-					<BasicProperties Width="180" Height="30" 
-				AsObject="true">
-                        <EmbeddedIcon>false</EmbeddedIcon>				
-						<FillColor/>
+					<BasicProperties Width="180" Height="30">
+                        <EmbeddedIcon>false</EmbeddedIcon>	
 						<TextColor/>
 						<Enabled>true</Enabled>
 						<ActionCode><![CDATA[if (value == true) {
@@ -6936,10 +6667,8 @@ else {
 					<PublicFlag>true</PublicFlag>
 					<PresentationFlag>true</PresentationFlag>
 					<ShowLabel>false</ShowLabel>
-					<BasicProperties Width="180" Height="30" 
-				AsObject="true">
-                        <EmbeddedIcon>false</EmbeddedIcon>				
-						<FillColor/>
+					<BasicProperties Width="180" Height="30">
+                        <EmbeddedIcon>false</EmbeddedIcon>	
 						<TextColor/>
 						<Enabled>true</Enabled>
 						<ActionCode><![CDATA[// Remove the data items from the chart so we can re-add them with better color.
@@ -7016,7 +6745,6 @@ if (value == true) {
 						<VerLabelsPosition>DEFAULT</VerLabelsPosition>
 						<TextColor>-12566464</TextColor>
 					</Labels>
-					<Persistent>true</Persistent>
 					<ShowLegend>true</ShowLegend>
 					<TimeWindowsMovementType>MOVEMENT_WITH_TIME</TimeWindowsMovementType>		
 					<TimeWindowUnits>MODEL_TIME_UNIT</TimeWindowUnits>
@@ -7079,7 +6807,6 @@ if (value == true) {
 						<VerLabelsPosition>DEFAULT</VerLabelsPosition>
 						<TextColor>-12566464</TextColor>
 					</Labels>
-					<Persistent>true</Persistent>
 					<ShowLegend>true</ShowLegend>
 					<VerScaleFromExpression><![CDATA[0]]></VerScaleFromExpression>
 					<VerScaleToExpression><![CDATA[1]]></VerScaleToExpression>
@@ -7109,8 +6836,6 @@ if (value == true) {
 			<Id>1520815555030</Id>
 			<Name><![CDATA[Main]]></Name>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Generic>false</Generic>
 			<GenericParameter>
 				<Id>1520815555029</Id>
@@ -7136,6 +6861,18 @@ if (value == true) {
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -7235,8 +6972,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Import><![CDATA[import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.function.BiConsumer;]]></Import>
@@ -7265,6 +7000,18 @@ import java.util.function.BiConsumer;]]></Import>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -7570,8 +7317,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.]]></Description>
 			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
-			<PresentationTopGroupPersistent>true</PresentationTopGroupPersistent>
-			<IconTopGroupPersistent>true</IconTopGroupPersistent>
 			<Generic>false</Generic>
 			<GenericParameter>
 				<Id>1520816771486</Id>
@@ -7597,6 +7342,18 @@ limitations under the License.]]></Description>
 					<Code><![CDATA[10]]></Code>
 					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
 				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
 			</AgentProperties>
 			<EnvironmentProperties>
 					<EnableSteps>false</EnableSteps>
@@ -7716,6 +7473,602 @@ limitations under the License.]]></Description>
 
 
 		</ActiveObjectClass>
+		<!--   =========   Active Object Class   ========  -->
+		<ActiveObjectClass>
+			<Id>1537484329185</Id>
+			<Name><![CDATA[CitationTracker]]></Name>
+			<ClientAreaTopLeft><X>0</X><Y>0</Y></ClientAreaTopLeft>
+			<Import><![CDATA[import de.undercouch.citeproc.csl.*;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.CSL;
+import de.undercouch.citeproc.output.Bibliography;
+import de.undercouch.citeproc.helper.json.StringJsonBuilder;
+import static ca.anthrodynamics.toolkit.anylogic.CollectionUtilities.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+]]></Import>
+			<Generic>false</Generic>
+			<GenericParameter>
+				<Id>1537484329180</Id>
+				<Name><![CDATA[1537484329180]]></Name>
+				<GenericParameterValue Class="CodeValue">
+					<Code><![CDATA[T extends Agent]]></Code>
+				</GenericParameterValue>
+				<GenericParameterLabel><![CDATA[Generic parameter:]]></GenericParameterLabel>
+			</GenericParameter>
+			<FlowChartsUsage>ENTITY</FlowChartsUsage>
+			<SamplesToKeep>100</SamplesToKeep>
+			<LimitNumberOfArrayElements>false</LimitNumberOfArrayElements>
+			<ElementsLimitValue>100</ElementsLimitValue>
+			<MakeDefaultViewArea>true</MakeDefaultViewArea>
+			<SceneGridColor/>
+			<SceneBackgroundColor/>
+			<AgentProperties>
+	 			<SpaceType>CONTINUOUS</SpaceType>			
+				<EnvironmentDefinesInitialLocation>true</EnvironmentDefinesInitialLocation>
+				<RotateAnimationTowardsMovement>true</RotateAnimationTowardsMovement>
+				<RotateAnimationVertically>false</RotateAnimationVertically>
+				<VelocityCode Class="CodeUnitValue">
+					<Code><![CDATA[10]]></Code>
+					<Unit Class="SpeedUnits"><![CDATA[MPS]]></Unit>
+				</VelocityCode>
+				<PhysicalLength Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalLength>
+				<PhysicalWidth Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalWidth>
+				<PhysicalHeight Class="CodeUnitValue">
+					<Code><![CDATA[1]]></Code>
+					<Unit Class="LengthUnits"><![CDATA[METER]]></Unit>
+				</PhysicalHeight>
+			</AgentProperties>
+			<EnvironmentProperties>
+					<EnableSteps>false</EnableSteps>
+					<StepDurationCode Class="CodeUnitValue">
+						<Code><![CDATA[1.0]]></Code>
+						<Unit Class="TimeUnits"><![CDATA[SECOND]]></Unit>
+					</StepDurationCode>
+					<SpaceType>CONTINUOUS</SpaceType>
+					<WidthCode><![CDATA[500]]></WidthCode>
+					<HeightCode><![CDATA[500]]></HeightCode>
+					<ZHeightCode><![CDATA[0]]></ZHeightCode>
+					<ColumnsCountCode><![CDATA[100]]></ColumnsCountCode>
+					<RowsCountCode><![CDATA[100]]></RowsCountCode>
+					<NeigborhoodType>MOORE</NeigborhoodType>
+					<LayoutType>USER_DEF</LayoutType>
+					<LayoutTypeApplyOnStartup>true</LayoutTypeApplyOnStartup>
+					<NetworkType>USER_DEF</NetworkType>
+					<NetworkTypeApplyOnStartup>true</NetworkTypeApplyOnStartup>
+					<ConnectionsPerAgentCode><![CDATA[2]]></ConnectionsPerAgentCode>
+					<ConnectionsRangeCode><![CDATA[50]]></ConnectionsRangeCode>
+					<NeighborLinkFractionCode><![CDATA[0.95]]></NeighborLinkFractionCode>
+					<MCode><![CDATA[10]]></MCode>
+			</EnvironmentProperties>
+			<DatasetsCreationProperties>
+				<AutoCreate>true</AutoCreate>
+					<OccurrenceAtTime>true</OccurrenceAtTime>
+					<OccurrenceDate>1489996800000</OccurrenceDate>
+					<OccurrenceTime Class="CodeUnitValue">
+						<Code><![CDATA[0]]></Code>
+						<Unit Class="TimeUnits"><![CDATA[YEAR]]></Unit>
+					</OccurrenceTime>
+					<RecurrenceCode Class="CodeUnitValue">
+						<Code><![CDATA[1]]></Code>
+						<Unit Class="TimeUnits"><![CDATA[YEAR]]></Unit>
+					</RecurrenceCode>
+			</DatasetsCreationProperties>
+			<ScaleRuler>
+				<Id>1537484329181</Id>
+				<Name><![CDATA[scale]]></Name>
+				<X>0</X><Y>-150</Y>
+				<PublicFlag>false</PublicFlag>
+				<PresentationFlag>false</PresentationFlag>
+				<ShowLabel>false</ShowLabel>
+				<DrawMode>SHAPE_DRAW_2D3D</DrawMode>
+				<Length>100</Length>
+				<Rotation>0</Rotation>
+				<ScaleType>BASED_ON_LENGTH</ScaleType>
+				<ModelLength>10</ModelLength>
+				<LengthUnits>METER</LengthUnits>
+				<Scale>10</Scale>
+				<InheritedFromParentAgentType>true</InheritedFromParentAgentType>
+			</ScaleRuler>
+			<ConnectionsId>1537484329207</ConnectionsId>
+			<Variables>
+				<Variable Class="CollectionVariable">
+					<Id>1537484329187</Id>
+					<Name><![CDATA[citedValues]]></Name>
+					<Description><![CDATA[Values cited in the model.]]></Description>
+					<X>20</X><Y>20</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Properties SaveInSnapshot="true" AccessType="private" StaticVariable="true">
+						<CollectionClass><![CDATA[LinkedHashMap]]></CollectionClass>
+						<ElementClass><![CDATA[LinkedHashSet<CSLItemDataBuilder>]]></ElementClass>
+						<ValueElementClass><![CDATA[Object]]></ValueElementClass>
+					</Properties>
+
+				</Variable>
+			</Variables>
+			<Functions>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
+					<ReturnType><![CDATA[<T> T]]></ReturnType>
+					<Id>1537484329189</Id>
+					<Name><![CDATA[use]]></Name>
+					<Description><![CDATA[Registers the citation and logs the value.]]></Description>
+					<X>20</X><Y>50</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[value]]></Name>
+						<Type><![CDATA[T]]></Type>
+					</Parameter>
+					<Parameter>
+						<Name><![CDATA[primaryCitation]]></Name>
+						<Type><![CDATA[CSLItemDataBuilder]]></Type>
+					</Parameter>
+					<Parameter>
+						<Name><![CDATA[citations]]></Name>
+						<Type><![CDATA[CSLItemDataBuilder...]]></Type>
+					</Parameter>
+					<Body><![CDATA[LinkedHashSet<CSLItemDataBuilder> sources = new LinkedHashSet<>();
+sources.add(primaryCitation);//.build());
+for (int i = 0; i < citations.length; i += 1)
+	sources.add(citations[i]);//.build());
+
+if (!citedValues.containsKey(sources) || citedValues.get(sources) != value)
+	citedValues.put(sources, value);
+
+return value;]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
+					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
+					<Id>1537484329191</Id>
+					<Name><![CDATA[citation]]></Name>
+					<Description><![CDATA[Convenience method to get a citation builder more quickly.]]></Description>
+					<X>20</X><Y>80</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[label]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Body><![CDATA[ModelCitation citation = new ModelCitation(
+	label,
+	Thread.currentThread().getStackTrace()[2].getClassName()
+);
+return citation;]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>VOID</ReturnModificator>
+					<ReturnType><![CDATA[double]]></ReturnType>
+					<Id>1537484329193</Id>
+					<Name><![CDATA[dumpBibliography]]></Name>
+					<X>20</X><Y>140</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[format]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Body><![CDATA[CSLItemData[] data = new CSLItemData[citedValues.size()];
+int i = 0;
+for (CSLItemData next : citedValues.keySet().stream().flatMap(c -> c.stream()).map(raw -> raw.build()).collect(Collectors.toList())) {
+	data[i] = next;
+	i += 1;
+}
+try {
+	traceln(CSL.makeAdhocBibliography(format, data).makeString());
+}
+catch (Throwable t) {
+	throw new RuntimeException(t);
+}]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>VOID</ReturnModificator>
+					<ReturnType><![CDATA[double]]></ReturnType>
+					<Id>1537484329195</Id>
+					<Name><![CDATA[dumpSimpleBibliography]]></Name>
+					<Description><![CDATA[Dumps a simple bibliography to the console.]]></Description>
+					<X>20</X><Y>170</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Body><![CDATA[// Build the header
+final String Sep = "\t";
+StringBuilder header = new StringBuilder();
+list(
+	"Label",
+	"Value",
+	"Notes",
+	"Authority",
+	"Primary Document",
+	"Authors",
+	"Date",
+	"DOI",
+	"URL",
+	"Accessed",
+	"Class in Model Setting this Field"
+).forEach(
+	item -> header.append(item).append(Sep)
+);
+traceln(header.toString());
+
+// Dump the values.
+citedValues
+	.entrySet()
+	.stream()
+	.sorted((A,B) -> A.getKey().iterator().next().build().getCitationLabel().compareTo(B.getKey().iterator().next().build().getCitationLabel()))
+	.forEach(kvp -> {
+		int subCitationNumber = 1;
+		for (CSLItemDataBuilder rawCitation : kvp.getKey()) {
+			CSLItemData citation = rawCitation.build();
+			Object value = kvp.getValue();
+			
+			String authorString = "";
+			if (citation.getAuthor() != null) {
+				for (CSLName name : Arrays.asList(citation.getAuthor())) { 
+					authorString += name.getFamily() + ", " + name.getGiven() + "; ";
+				}
+			}
+			else {
+				authorString = null;
+			}
+			
+			// Special data type strings that frequently appear.
+			String valueString = value.toString();
+			if (value instanceof TableFunction) {
+				TableFunction tf = (TableFunction)value;
+				Map<Double, Double> table = new TreeMap<>();
+				for (int i = 0; i < tf.getValues().length; i += 1) {
+					table.put(tf.getArguments()[i], tf.getValues()[i]);
+				}
+				valueString = "Table Function [" + table + ", " + tf.getInterpolationType() + ", " + tf.getOutOfRangeAction()+"]";	
+			}
+			else if (value instanceof CustomDistribution || value instanceof CustomDistributionOfOptions) {
+				
+				// TODO: VERY crude. Close enough for now. Isn't behaving, have other things to do today.
+				String rawString = value.toString();
+				String truncatedString = rawString
+					.replaceAll("[\\n\\r]+", ",")
+					.replaceAll("\t","=")
+					.replace(".*rows?,(.*)", "\1")
+				;
+				
+				valueString = "Distribution [" + truncatedString + "]";	
+			}
+			else if (value.getClass().isArray()) {
+				valueString = CollectionUtilities.deepToString(value);
+			}
+			
+			StringBuilder sb = new StringBuilder();
+			list(
+				citation.getCitationLabel(),
+				valueString,
+				citation.getNote(),
+				//subCitationNumber,
+				citation.getAuthority(),
+				citation.getTitle(),
+				authorString,
+				ifNotNull(citation.getOriginalDate(), c -> Arrays.deepToString(c.getDateParts())),
+				citation.getDOI(),
+				citation.getURL(),
+				ifNotNull(citation.getAccessed(), c -> Arrays.deepToString(c.getDateParts()))
+			).forEach(
+				item -> sb.append(item).append(Sep)
+			);
+			
+			if (rawCitation instanceof ModelCitation)
+				sb.append(((ModelCitation)rawCitation).creatingClazz).append(Sep);
+			else
+				sb.append("null").append(Sep);
+			
+			traceln(sb.toString());
+			
+			subCitationNumber += 1;
+		}
+	})
+;
+]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>VOID</ReturnModificator>
+					<ReturnType><![CDATA[double]]></ReturnType>
+					<Id>1537484329197</Id>
+					<Name><![CDATA[clear]]></Name>
+					<Description><![CDATA[Clears all citations.]]></Description>
+					<X>20</X><Y>200</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Body><![CDATA[citedValues.clear();]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
+					<ReturnType><![CDATA[CSLName]]></ReturnType>
+					<Id>1537484329199</Id>
+					<Name><![CDATA[name]]></Name>
+					<Description><![CDATA[Convenience method for producing a CSL name.]]></Description>
+					<X>20</X><Y>230</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[family]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Parameter>
+						<Name><![CDATA[given]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Body><![CDATA[return new CSLName(
+               family, //String family,
+               given, //String given,
+               null,  //String droppingParticle,
+               null,  //String nonDroppingParticle,
+               null,  //String suffix,
+               false, //Boolean commaPrefix,
+               false, //Boolean commaSuffix,
+               false, //Boolean staticOrdering,
+               false, //Boolean staticParticles,
+               null,  //String literal,
+               false, //Boolean parseNames,
+               false  //Boolean isInstitution
+);]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
+					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
+					<Id>1537484329201</Id>
+					<Name><![CDATA[placeholder]]></Name>
+					<Description><![CDATA[Convenience method to get a citation builder more quickly.]]></Description>
+					<X>40</X><Y>120</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[label]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Body><![CDATA[// Need to log class name here, otherwise this method will show up as the calling class which isn't what we want.
+return (ModelCitation)(citation("Placeholder: " + label, Thread.currentThread().getStackTrace()[2].getClassName())).authority("Modeler");]]></Body>
+				</Function>
+				<Function AccessType="private" StaticFunction="true">
+					<ReturnModificator>RETURNS_VALUE</ReturnModificator>
+					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
+					<Id>1537484329203</Id>
+					<Name><![CDATA[citation]]></Name>
+					<Description><![CDATA[Convenience method to get a citation builder more quickly.]]></Description>
+					<X>40</X><Y>100</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[label]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Parameter>
+						<Name><![CDATA[className]]></Name>
+						<Type><![CDATA[String]]></Type>
+					</Parameter>
+					<Body><![CDATA[ModelCitation citation = new ModelCitation(
+	label,
+	className
+);
+return citation;]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>VOID</ReturnModificator>
+					<ReturnType><![CDATA[double]]></ReturnType>
+					<Id>1537484329205</Id>
+					<Name><![CDATA[dumpBibliographyToWord]]></Name>
+					<X>20</X><Y>270</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Body><![CDATA[// Graciously derived from https://www.tutorialspoint.com/apache_poi_word/apache_poi_word_tables.htm
+//Blank Document
+try {
+	XWPFDocument document = new XWPFDocument();
+	
+	//Write the Document in file system
+	FileOutputStream out = new FileOutputStream(new File("references.docx"));
+	
+	//create table
+	XWPFTable table = document.createTable();
+	
+	// Create the header.
+	XWPFTableRow headerRow = table.getRow(0);
+	final int LabelCell = 0, 
+		ValueCell = 1,
+		DocumentDataCell = 2
+	;
+	headerRow.getCell(0).setText("Label");
+	headerRow.addNewTableCell().setText("Value");
+	headerRow.addNewTableCell().setText("Source and Notes");
+		
+	// Dump the values.
+	citedValues
+		.entrySet()
+		.stream()
+		.sorted((A,B) -> A.getKey().iterator().next().build().getCitationLabel().compareTo(B.getKey().iterator().next().build().getCitationLabel()))
+		.forEach(kvp -> {
+			int subCitationNumber = 1;
+			for (CSLItemDataBuilder rawCitation : kvp.getKey()) {
+				CSLItemData citation = rawCitation.build();
+				Object value = kvp.getValue();
+				
+				String authorString = "";
+				if (citation.getAuthor() != null) {
+					for (CSLName name : Arrays.asList(citation.getAuthor())) { 
+						authorString += name.getFamily() + ", " + name.getGiven() + "; ";
+					}
+				}
+				else {
+					authorString = null;
+				}
+				
+				// Special data type strings that frequently appear.
+				String valueString = value.toString();
+				if (value instanceof TableFunction) {
+					TableFunction tf = (TableFunction)value;
+					Map<Double, Double> tableFunction = new TreeMap<>();
+					for (int i = 0; i < tf.getValues().length; i += 1) {
+						tableFunction.put(tf.getArguments()[i], tf.getValues()[i]);
+					}
+					valueString = "Table Function [" + tableFunction + ", " + tf.getInterpolationType() + ", " + tf.getOutOfRangeAction()+"]";	
+				}
+				else if (value instanceof CustomDistribution || value instanceof CustomDistributionOfOptions) {
+					
+					// TODO: VERY crude. Close enough for now. Isn't behaving, have other things to do today.
+					String rawString = value.toString();
+					String truncatedString = rawString
+						.replaceAll("[\\n\\r]+", ",")
+						.replaceAll("\t","=")
+						.replace(".*rows?,(.*)", "\1")
+					;
+					
+					valueString = "Distribution [" + truncatedString + "]";	
+				}
+				else if (value.getClass().isArray()) {
+					valueString = CollectionUtilities.deepToString(value);
+				}
+				
+				// Create the row.
+				XWPFTableRow row = table.createRow();
+				String citationLabel = citation.getCitationLabel();
+				if (subCitationNumber > 1)
+					citationLabel = "(Continuation of preceding item) " + citationLabel;
+				row.getCell(LabelCell).setText(citationLabel);
+				row.getCell(ValueCell).setText(valueString);
+				
+				// Authors / authority a bit funny.
+				String authorityString = citation.getAuthority();
+				StringBuilder sourceSb = new StringBuilder();
+				final String SEP = ". ";
+				if (authorityString == null && authorString != null)
+					sourceSb.append(authorString).append(SEP);
+				else if (authorityString != null && authorString == null)
+					sourceSb.append(authorityString).append(SEP);
+				else if (authorityString != null && authorString != null)
+					sourceSb.append(authorityString + " (" + authorString + ")").append(SEP);
+				
+				// Build up the document string.
+				ifNotNull(citation.getTitle(), obj -> sourceSb.append(obj).append(SEP));
+				ifNotNull(citation.getOriginalDate(), obj -> {
+					String dateString = "";
+					if (obj.getDateParts().length == 3)
+						dateString = "" + obj.getDateParts()[0][0] + "/" + obj.getDateParts()[0][1] + "/" + obj.getDateParts()[0][2];
+					if (obj.getDateParts().length == 2)
+						dateString = "" + obj.getDateParts()[0][0] + "/" + obj.getDateParts()[0][1];
+					if (obj.getDateParts().length == 1)
+						dateString = "" + obj.getDateParts()[0][0];
+					
+					sourceSb.append(dateString).append(SEP);
+					return sourceSb;
+				});
+				ifNotNull(citation.getDOI(), obj -> sourceSb.append(obj).append(SEP));
+				ifNotNull(citation.getURL(), obj -> sourceSb.append(obj).append(SEP));
+				ifNotNull(citation.getAccessed(), obj -> {
+					String dateString = "Accessed ";
+					if (obj.getDateParts().length == 3)
+						dateString = "" + obj.getDateParts()[0][0] + "/" + obj.getDateParts()[0][1] + "/" + obj.getDateParts()[0][2];
+					if (obj.getDateParts().length == 2)
+						dateString = "" + obj.getDateParts()[0][0] + "/" + obj.getDateParts()[0][1];
+					if (obj.getDateParts().length == 1)
+						dateString = "" + obj.getDateParts()[0][0];
+					
+					sourceSb.append(dateString).append(SEP);
+					return sourceSb;
+				});
+				ifNotNull(citation.getNote(), obj -> sourceSb.append("Note / See Section: " + obj).append(SEP));
+				
+				row.getCell(DocumentDataCell).setText(sourceSb.toString());
+				subCitationNumber += 1;
+			}
+		})
+	;
+		
+	// Write out to file.
+	document.write(out);
+	out.close();
+	System.out.println("bibliography docx written successully");
+}
+catch (Throwable t) {
+	throw new RuntimeException(t);
+}]]></Body>
+				</Function>
+				<Function AccessType="public" StaticFunction="true">
+					<ReturnModificator>VOID</ReturnModificator>
+					<ReturnType><![CDATA[ModelCitation]]></ReturnType>
+					<Id>1537909436434</Id>
+					<Name><![CDATA[referenceDocument]]></Name>
+					<Description><![CDATA[Allows a reference document used repeatedly to be cited without having to specify an accompanying value.]]></Description>
+					<X>170</X><Y>80</Y>
+					<Label><X>10</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<Parameter>
+						<Name><![CDATA[citation]]></Name>
+						<Type><![CDATA[CSLItemDataBuilder]]></Type>
+					</Parameter>
+					<Body><![CDATA[use(
+	"<Reference document>",
+	citation
+);]]></Body>
+				</Function>
+			</Functions>
+			<AgentLinks>
+				<AgentLink>
+					<Id>1537484329207</Id>
+					<Name><![CDATA[connections]]></Name>
+					<X>50</X><Y>-50</Y>
+					<Label><X>15</X><Y>0</Y></Label>
+					<PublicFlag>false</PublicFlag>
+					<PresentationFlag>true</PresentationFlag>
+					<ShowLabel>true</ShowLabel>
+					<HandleReceiveInConnections>false</HandleReceiveInConnections>
+					<AgentLinkType>COLLECTION_OF_LINKS</AgentLinkType>
+					<AgentLinkBidirectional>true</AgentLinkBidirectional>
+					<MessageType><![CDATA[Object]]></MessageType>
+					<LineStyle>SOLID</LineStyle>
+					<LineWidth>1</LineWidth>
+					<LineColor>-16777216</LineColor>
+					<LineZOrder>UNDER_AGENTS</LineZOrder>
+					<LineArrow>NONE</LineArrow>
+					<LineArrowPosition>END</LineArrowPosition>
+				</AgentLink>
+			</AgentLinks>
+
+
+
+		</ActiveObjectClass>
 	</ActiveObjectClasses>	
 	<DifferentialEquationsMethod>EULER</DifferentialEquationsMethod>
 	<MixedEquationsMethod>RK45_NEWTON</MixedEquationsMethod>
@@ -7753,7 +8106,8 @@ limitations under the License.]]></Description>
 			<ExecutionMode>realTimeScaled</ExecutionMode>
 			<RealTimeScale>1.0</RealTimeScale>
 			<EnableZoomAndPanning>true</EnableZoomAndPanning>
-			<Maximized>false</Maximized>
+			<EnableDeveloperPanel>false</EnableDeveloperPanel>
+			<ShowDeveloperPanelOnStart>false</ShowDeveloperPanelOnStart>
 		</AnimationProperties>
 		<Inputs>		
 		</Inputs>
@@ -8059,7 +8413,8 @@ public class DeclarativeMapBuilder implements Serializable {
 		<!--   =========   Java Class   ========  -->
 		<JavaClass>
 			<Id>1520815340756</Id>
-			<Name><![CDATA[Exoskeleton]]></Name>
+			<Name><![CDATA[ExoskeletonOld]]></Name>
+			<ExcludeFromBuild>true</ExcludeFromBuild>
 			<Text><![CDATA[import static ca.anthrodynamics.toolkit.anylogic.StatisticUtilities.*;
 import static ca.anthrodynamics.toolkit.anylogic.CollectionUtilities.*;
 import java.util.function.*;
@@ -8089,9 +8444,9 @@ import org.apache.commons.math3.primes.Primes;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */	
-public class Exoskeleton implements Serializable {
+public class ExoskeletonOld implements Serializable {
 
-    private Exoskeleton() {}
+    private ExoskeletonOld() {}
     
     /**
      * @return
@@ -8118,19 +8473,19 @@ public class Exoskeleton implements Serializable {
     }
     
     public static Chart1DExoskeleton $(Chart1D chart) {
-    	return new Chart1DExoskeleton(chart);
+    	return new Chart1DExoskeletonOld(chart);
     }  
     
     public static PlotExoskeleton $(Chart2DPlot chart) {
-    	return new PlotExoskeleton(chart);
+    	return new PlotExoskeletonOld(chart);
     }  
     
     public static TimeStackChartExoskeleton $(TimeStackChart chart) {
-    	return new TimeStackChartExoskeleton(chart);
+    	return new TimeStackChartExoskeletonOld(chart);
     }
     
     public static DataSetExoskeleton $(DataSet dataset) {
-    	return new DataSetExoskeleton(dataset);
+    	return new DataSetExoskeletonOld(dataset);
     }
 
     /**
@@ -8145,7 +8500,7 @@ public class Exoskeleton implements Serializable {
     	
     	private Collection<T> collection;
     	
-    	public <U extends Collection<T>> CollectionExoskeleton(U collection, boolean parallelProcessing) {
+    	public <U extends Collection<T>> CollectionExoskeletonOld(U collection, boolean parallelProcessing) {
     		this.collection = collection;
     		this.isParallelized = parallelProcessing;
     	}
@@ -8155,7 +8510,7 @@ public class Exoskeleton implements Serializable {
     	 * 	An exoskeleton optimized for parallelization.
     	 */
     	public CollectionExoskeleton<T> inParallel() {
-    		return new CollectionExoskeleton(collection, true);
+    		return new CollectionExoskeletonOld(collection, true);
     	}
     	
     	public int size() {
@@ -8295,7 +8650,7 @@ public class Exoskeleton implements Serializable {
     	public DataSetExoskeleton snapshot(ToDoubleFunction<T> x, ToDoubleFunction<T> y) {
     		ExtendedDataSet ds = new ExtendedDataSet(limitMin(1, collection.size()));
     		collection.forEach(thing -> ds.add(x.applyAsDouble(thing), y.applyAsDouble(thing)));
-    		return new DataSetExoskeleton(ds);
+    		return new DataSetExoskeletonOld(ds);
     	}
     	
     }
@@ -8303,7 +8658,7 @@ public class Exoskeleton implements Serializable {
     public static class Chart1DExoskeleton {
     	private Chart1D chart;
     	
-    	public Chart1DExoskeleton(Chart1D chart) {
+    	public Chart1DExoskeletonOld(Chart1D chart) {
     		this.chart = chart;
     	}
     	
@@ -8321,7 +8676,7 @@ public class Exoskeleton implements Serializable {
     public static class PlotExoskeleton {
     	private Chart2DPlot chart;
     	
-    	public PlotExoskeleton(Chart2DPlot chart) {
+    	public PlotExoskeletonOld(Chart2DPlot chart) {
     		this.chart = chart;
     	}
     	
@@ -8339,7 +8694,7 @@ public class Exoskeleton implements Serializable {
     public static class TimeStackChartExoskeleton {
     	private TimeStackChart chart;
     	
-    	public TimeStackChartExoskeleton(TimeStackChart chart) {
+    	public TimeStackChartExoskeletonOld(TimeStackChart chart) {
     		this.chart = chart;
     	}
     	
@@ -8372,11 +8727,11 @@ public class Exoskeleton implements Serializable {
      */
     public static class DataSetExoskeleton {
     	private ExtendedDataSet data;
-    	public DataSetExoskeleton(ExtendedDataSet data) {
+    	public DataSetExoskeletonOld(ExtendedDataSet data) {
     		this.data = data;
     	}
     	
-    	public DataSetExoskeleton(DataSet data) {
+    	public DataSetExoskeletonOld(DataSet data) {
     		this.data = ExtendedDataSet.from(data, 0);
     	}
     	
@@ -8414,7 +8769,7 @@ public class Exoskeleton implements Serializable {
     			Collection<T> members = things.stream().filter(group::isMember).collect(Collectors.toList());
         		ExtendedDataSet ds = new ExtendedDataSet(limitMin(1, members.size()));
         		members.forEach(thing -> ds.add(x.applyAsDouble(thing), y.applyAsDouble(thing)));
-    			map.put(group.getIdentifier(), new DataSetExoskeleton(ds));
+    			map.put(group.getIdentifier(), new DataSetExoskeletonOld(ds));
     		});
     		return map;
     	}
@@ -9226,6 +9581,7 @@ public interface TestCaseBuilder {
 		<JavaClass>
 			<Id>1520815340788</Id>
 			<Name><![CDATA[TestRunner]]></Name>
+			<ExcludeFromBuild>true</ExcludeFromBuild>
 			<Text><![CDATA[import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10958,6 +11314,502 @@ public class WrappedFunctions implements Serializable {
     }
 }]]></Text>
 		</JavaClass>
+		<!--   =========   Java Class   ========  -->
+		<JavaClass>
+			<Id>1537484351270</Id>
+			<Name><![CDATA[Exoskeleton]]></Name>
+			<Text><![CDATA[import static ca.anthrodynamics.toolkit.anylogic.StatisticUtilities.*;
+import static ca.anthrodynamics.toolkit.anylogic.CollectionUtilities.*;
+import java.util.function.*;
+import java.util.stream.*;
+import com.google.gson.Gson;
+
+import org.apache.commons.math3.primes.Primes;
+
+/**
+ * Provides methods and classes to greatly extend the powers of 
+ * regular AnyLogic classes, collections, and common operations.
+ *
+ * @author Dylan Knowles
+ * @license
+ * NOTICE
+ * Copyright 2018 Dylan Knowles and worldwide Anthrodynamics Simulation branches (As of 2018, Canada: Anthrodynamics Simulation Services Ltd.; Australia: Anthrodynamics Simulation Services Australia PTY Ltd.)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */	
+public class Exoskeleton implements Serializable {
+
+    private Exoskeleton() {}
+    
+    /**
+     * @return
+     * 	An exoskeleton for the collection.
+     */
+    public static <T, U extends Collection<T>> CollectionExoskeleton<T> $(U collection) {
+    	return new CollectionExoskeleton<T>(collection, false);
+    }
+    
+    /**
+     * @return
+     * 	An exoskeleton for the collection.
+     */
+    public static <T extends Agent, U extends AgentList<T>> CollectionExoskeleton<T> $(U agents) {
+    	return new CollectionExoskeleton<T>(asCollection(agents), false);
+    }
+    
+    /**
+     * @return
+     * 	An exoskeleton for the items in the cached collection.
+     */
+    public static <T, U extends CachedObject<? extends Collection<T>>> CollectionExoskeleton<T> $(U cachedCollection) {
+    	return new CollectionExoskeleton<T>(cachedCollection.get(), false);
+    }
+    
+    public static Chart1DExoskeleton $(Chart1D chart) {
+    	return new Chart1DExoskeleton(chart);
+    }  
+    
+    public static PlotExoskeleton $(Chart2DPlot chart) {
+    	return new PlotExoskeleton(chart);
+    }  
+    
+    public static TimeStackChartExoskeleton $(TimeStackChart chart) {
+    	return new TimeStackChartExoskeleton(chart);
+    }
+    
+    public static DataSetExoskeleton $(DataSet dataset) {
+    	return new DataSetExoskeleton(dataset);
+    }
+    
+    private static interface Streamable<T> {
+	    public Stream<T> stream();
+	    public default Stream<T> stream(boolean parallelize) {
+	    	if (parallelize)
+	    		return stream().parallel();
+	    	else
+	    		return stream();
+	    }
+	    public default Collection<T> collection() {
+	    	return stream().collect(Collectors.toList());
+	    }
+	    public default int size() {
+	    	return collection().size();
+	    }
+    }
+    
+    private static class StreamableCollection<T> implements Streamable<T> {
+    	
+    	private Collection<T> collection;
+    	public StreamableCollection(Collection<T> collection) {
+    		this.collection = unmodifiable(collection);
+    	}
+    	public Stream<T> stream() {
+    		return collection.stream();
+    	}
+    	public Collection<T> collection() {
+    		return collection;
+    	}
+    }
+    
+    public static class StreamableStream<T> implements Streamable {
+    	private Stream<T> stream;
+    	public StreamableStream(Stream<T> stream) {
+    		this.stream = stream;
+    	}
+    	public Stream<T> stream() {
+    		return stream;
+    	}
+    }
+
+    /**
+     * Provides easy-access methods for a collection.
+     * The collection should be treated as a stream.
+     * @author dylan
+     *
+     * @param <T>
+     */
+    public static class CollectionExoskeleton<T> {
+    	
+    	private boolean isParallelized;
+    	
+    	private Streamable<T> collection;
+    	
+    	private <U extends Collection<T>> CollectionExoskeleton(U collection, boolean parallelProcessing) {
+    		this.collection = new StreamableCollection<>(collection);
+    		this.isParallelized = parallelProcessing;
+    	}
+    	
+    	private CollectionExoskeleton(Stream<T> stream, boolean parallelProcessing) {
+    		this.collection = new StreamableStream<>(stream);
+    		this.isParallelized = parallelProcessing;
+    	}
+    	
+    	private CollectionExoskeleton(Streamable<T> streamable, boolean parallelProcessing) {
+    		this.collection = streamable;
+    		this.isParallelized = parallelProcessing;
+    	}
+    	
+    	/**
+    	 * @return
+    	 * 	An exoskeleton optimized for parallelization.
+    	 */
+    	public CollectionExoskeleton<T> inParallel() {
+    		return new CollectionExoskeleton(collection, true);
+    	}
+    	
+    	public int size() {
+    		return collection.size();
+    	}
+    	
+    	/**
+    	 * @param predicate
+    	 * @return
+    	 * 	The percentage of items in the collection matching the predicate.
+    	 */
+    	public double percentWhere(Predicate<T> predicate) {
+    		if (isParallelized)
+    			return parallelPercentWhere(collection.collection(), predicate);
+    		else
+    			return StatisticUtilities.percentWhere(collection.collection(), predicate);
+    	}
+    	
+    	/**
+    	 * @param value
+    	 * @return
+    	 * 	The sum of the items in the collection.
+    	 */
+    	public double sum(ToDoubleFunction<T> value) {
+    		if (isParallelized)
+    			return parallelSum(collection.collection(), value);
+    		else
+    			return collection.stream().mapToDouble(value).sum();
+    	}
+    	
+    	/**
+    	 * @param value
+    	 * @param nanValue
+    	 * 	The value to provide when there are no items to average, or if the average produces NaN.
+    	 * @return
+    	 * 	The average of the items in the collection.
+    	 */
+    	public double average(ToDoubleFunction<T> value, double nanValue) {
+    		if (isParallelized)
+    			return parallelAverage(collection.collection(), value, nanValue);
+    		else
+    			return collection.stream().mapToDouble(value).average().orElse(nanValue);
+    	}    	
+    	
+    	/**
+    	 * @param value
+    	 * @return
+    	 * 	The average of the items in the collection, or NaN if a problem occurs.
+    	 */
+    	public double average(ToDoubleFunction<T> value) {
+    		if (isParallelized)
+    			return parallelAverage(collection.collection(), value, Double.NaN);
+    		else
+    			return collection.stream().mapToDouble(value).average().orElse(Double.NaN);
+    	}
+    	
+    	/**
+    	 * @return
+    	 * 	The number of items matching the criteria.
+    	 */
+    	public long count(Predicate<T> predicate) {
+    		return collection.stream(isParallelized).filter(predicate).count();
+    	}
+    	
+    	/**
+    	 * @return
+    	 * 	True, if the collection contains any elements matching the predicate.
+    	 */
+    	public boolean contains(Predicate<T> predicate) {
+    		return collection.stream(isParallelized).anyMatch(predicate);
+    	}
+    	
+    	/**
+    	 * @return
+    	 * 	A filtered collection.
+    	 * @note
+    	 * 	This requires the regrouping of sub-items, and therefore may incur a bottleneck.
+    	 */
+    	public CollectionExoskeleton<T> filter(Predicate<T> predicate) {
+    		return new CollectionExoskeleton<T>(
+    			collection.stream(isParallelized).filter(predicate),
+    			isParallelized
+    		);
+    		/*if (isParallelized)
+    			return new CollectionExoskeleton<T>(collection.stream().parallel().filter(predicate).collect(Collectors.toList()), isParallelized);
+    		else
+    			return new CollectionExoskeleton<T>(collection.stream().filter(predicate).collect(Collectors.toList()), isParallelized);*/
+    	}
+    	
+    	public <U> CollectionExoskeleton<U> map(Function<T, U> mapper) {
+    		return new CollectionExoskeleton<U>(
+    			collection
+    			.stream(isParallelized)
+    			.map(mapper),
+    			isParallelized
+    		);
+    	}
+    	
+    	public <U> CollectionExoskeleton<U> flatMap(Function<T, Stream<U>> mapper) {
+    		return new CollectionExoskeleton<U>(
+    			collection
+    			.stream(isParallelized)
+    			.flatMap(mapper),
+    			isParallelized
+    		);
+    	}
+    	
+    	/**
+    	 * 
+    	 * @param mapper
+    	 * @return
+    	 * 	The items in the collection mapped to a value.
+    	 */
+    	public <U> Collection<U> mapCollect(Function<T, U> mapper) {
+    		return collection
+    			.stream(isParallelized)
+    			.map(mapper)
+    			.collect(Collectors.toList())
+    		;
+    	}
+    	
+    	/**
+    	 * 
+    	 * @param mapper
+    	 * @return
+    	 * 	The items in the collection mapped to a value.
+    	 */
+    	public <U> Collection<U> flatMapCollect(Function<T, Stream<U>> mapper) {
+    		return collection
+    			.stream(isParallelized)
+    			.flatMap(mapper)
+    			.collect(Collectors.toList())
+    		;
+    	}
+    	
+    	/**
+    	 * 
+    	 * @param groups
+    	 * @return
+    	 * 	The collection, sorted into groups.
+    	 */
+    	public <U> Grouper<T, U> groupBy(Grouping<U, T> head, Grouping<U, T>... tail) {
+    		List<Grouping<U, T>> groups = new LinkedList<>();
+    		groups.add(head);
+    		groups.addAll(Arrays.asList(tail));
+    		return new Grouper(collection.collection(), groups);
+    	}
+    	
+    	
+    	public DataSetExoskeleton snapshot(ToDoubleFunction<T> x, ToDoubleFunction<T> y) {
+    		ExtendedDataSet ds = new ExtendedDataSet(limitMin(1, collection.size()));
+    		collection.stream().forEach(thing -> ds.add(x.applyAsDouble(thing), y.applyAsDouble(thing)));
+    		return new DataSetExoskeleton(ds);
+    	}
+    	
+    	public void forEach(Consumer<T> action) {
+    		collection.stream(isParallelized).forEach(action);
+    		
+    	}
+    }
+    
+    public static class Chart1DExoskeleton {
+    	private Chart1D chart;
+    	
+    	public Chart1DExoskeleton(Chart1D chart) {
+    		this.chart = chart;
+    	}
+    	
+    	public Chart1DExoskeleton add(String label, Color color, double value) {
+    		ExperimentUtilities.plot(
+    			label,
+    			color,
+    			value,
+    			chart
+    		);
+    		return this;
+    	}
+    }
+    
+    public static class PlotExoskeleton {
+    	private Chart2DPlot chart;
+    	
+    	public PlotExoskeleton(Chart2DPlot chart) {
+    		this.chart = chart;
+    	}
+    	
+    	public PlotExoskeleton add(String label, Color color, DataSet ds) {
+    		ExperimentUtilities.plot(
+    			label,
+    			color,
+    			ds,
+    			chart
+    		);
+    		return this;
+    	}
+    	
+    	public ExtendedDataSet getAverage() {
+    		SortedMap<Double, List<Double>> values = new TreeMap<>();
+    		
+    		for (int i = 0; i < chart.getCount(); i += 1) {
+    			DataSet ds = chart.get(i);
+    			for (int j = 0; j < ds.size(); j += 1) {
+    				double x = ds.getX(j);
+    				double y = ds.getY(j);
+    				values.putIfAbsent(x, new LinkedList<>());
+        			values.get(x).add(y);
+    			}
+    		}
+    		
+    		ExtendedDataSet average = new ExtendedDataSet(values.size());
+    		values.forEach((x,yList) -> {
+        		average.add(x, average(yList, y->y));
+    		});
+    		return average;
+    	}
+    }
+    
+    public static class TimeStackChartExoskeleton {
+    	private TimeStackChart chart;
+    	
+    	public TimeStackChartExoskeleton(TimeStackChart chart) {
+    		this.chart = chart;
+    	}
+    	
+    	public TimeStackChartExoskeleton add(String label, Color color, DataSet ds) {
+    		ExperimentUtilities.plot(
+    			label,
+    			color,
+    			ds,
+    			chart
+    		);
+    		return this;
+    	}
+    	
+    	public TimeStackChartExoskeleton add(String label, Color color, Supplier<Double> valueSupplier, Agent anyAgent) {
+    		ExperimentUtilities.plot(
+    			label,
+    			color,
+    			valueSupplier,
+    			chart,
+    			anyAgent
+    		);
+    		return this;
+    	}
+    }
+    
+    /**
+     * Extends a dataset's capabilities.
+     * @author dylan
+     *
+     */
+    public static class DataSetExoskeleton {
+    	private ExtendedDataSet data;
+    	public DataSetExoskeleton(ExtendedDataSet data) {
+    		this.data = data;
+    	}
+    	
+    	public DataSetExoskeleton(DataSet data) {
+    		this.data = ExtendedDataSet.from(data, 0);
+    	}
+    	
+    	public void plot(String label, Color color, Plot plot) {
+    		ExperimentUtilities.plot(label, color, data, plot);
+    	}
+    	
+    	public ExtendedDataSet data() {
+    		return data;
+    	}
+    	
+    	
+    	
+    	public String toJson() {
+    		 Gson gson = new Gson();
+    		 return gson.toJson(data);
+    	}
+    }
+    
+    public static class Grouper<T, V> {
+    	private Collection<T> things;
+    	private List<Grouping<V,T>> groups;
+    	
+    	public Grouper(
+    	    	Collection<T> things,
+    	    	List<Grouping<V,T>> groups
+    	) {
+    		this.things = things;
+    		this.groups = groups;
+    	}
+    	
+    	public Map<V, DataSetExoskeleton> snapshot(ToDoubleFunction<T> x, ToDoubleFunction<T> y) {
+    		Map<V, DataSetExoskeleton> map = new HashMap<>();
+    		groups.forEach(group -> {
+    			Collection<T> members = things.stream().filter(group::isMember).collect(Collectors.toList());
+        		ExtendedDataSet ds = new ExtendedDataSet(limitMin(1, members.size()));
+        		members.forEach(thing -> ds.add(x.applyAsDouble(thing), y.applyAsDouble(thing)));
+    			map.put(group.getIdentifier(), new DataSetExoskeleton(ds));
+    		});
+    		return map;
+    	}
+    	
+    	/**
+    	 * 
+    	 * @param reduction
+    	 * @return
+    	 * 	Extracts the value for each group.
+    	 */
+    	public <U> Map<V, U> calculate(Function<List<T>, U> reduction) {
+    		return StatisticUtilities.extract(
+    			() -> things,
+    			reduction,
+    			groups
+    		).get();
+    	}
+    }
+    
+    private static void test() {
+    	
+    	Collection<String> strings = list("First", "Second", "Third");
+    	$(strings).inParallel().percentWhere(string -> string.charAt(0) == 'F');
+    	$(strings).sum(String::length);
+    	$(strings).inParallel().average(string -> string.hashCode());
+    	$(strings)
+    		.inParallel()
+    		.snapshot(string -> string.length(), string -> string.hashCode())
+    		.toJson()
+    	;
+    	
+    	CachedObject<List<Double>> doubles = new CachedObject<>(null, 0d, () -> list(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0));
+    	Plot chart = null;
+    	$(doubles).inParallel().mapCollect(dub -> dub.intValue() * 2);
+    	$(doubles)
+    		.inParallel()
+    		.filter(v -> v < 9.0)
+    		.map(v -> (int)(double)v)
+    		.groupBy(
+    			grouping("Primes", v -> Primes.isPrime(v)),
+    			grouping("Non-Primes", v -> Primes.isPrime(v) == false)
+    		)
+    		.snapshot(v -> v, v -> v*v)
+    		.forEach((id,data) -> data.plot(id, blue, chart));
+    	;
+    }
+
+}]]></Text>
+		</JavaClass>
 	</JavaClasses>
     <RequiredLibraryReference>
 		<LibraryName><![CDATA[com.anylogic.libraries.processmodeling]]></LibraryName>
@@ -10992,6 +11844,16 @@ public class WrappedFunctions implements Serializable {
 	</ClassPathEntry>
 	<ClassPathEntry>
 		<Location><![CDATA[lib/loif-niceassert/niceassert.jar]]></Location>
+		<Imported>false</Imported>
+		<Folder>false</Folder>
+	</ClassPathEntry>
+	<ClassPathEntry>
+		<Location><![CDATA[lib/poi-3.17/poi-3.17.jar]]></Location>
+		<Imported>false</Imported>
+		<Folder>false</Folder>
+	</ClassPathEntry>
+	<ClassPathEntry>
+		<Location><![CDATA[lib/poi-3.17/poi-ooxml-3.17.jar]]></Location>
 		<Imported>false</Imported>
 		<Folder>false</Folder>
 	</ClassPathEntry>
